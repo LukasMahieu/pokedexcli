@@ -3,13 +3,15 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/LukasMahieu/pokedexcli/internal/pokecache"
 	"os"
+	"time"
 )
 
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, []string) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -34,24 +36,32 @@ func getCommands() map[string]cliCommand {
 			description: "Displays the next set of locations",
 			callback:    commandMapBack,
 		},
+		"explore": {
+			name:        "explore",
+			description: "Explore a given location",
+			callback:    commandExplore,
+		},
 	}
 	return commands
 }
 
-func callCommand(cfg *config, command string) error {
+func callCommand(cfg *config, command string, args []string) error {
 	cmd, ok := getCommands()[command]
 	if !ok {
 		fmt.Println("Unknown command")
 		return nil
 	}
-	return cmd.callback(cfg)
+	return cmd.callback(cfg, args)
 
 }
 
 func main() {
+	cache := pokecache.NewCache(time.Second * 5)
+
 	cfg := &config{
 		Previous: "",
 		Next:     "https://pokeapi.co/api/v2/location-area/",
+		Cache:    cache,
 	}
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Println("Welcome to the Pokedex!")
@@ -63,6 +73,6 @@ func main() {
 		if len(cleanedInput) == 0 {
 			continue
 		}
-		callCommand(cfg, cleanedInput[0])
+		callCommand(cfg, cleanedInput[0], cleanedInput[1:])
 	}
 }
