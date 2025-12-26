@@ -64,3 +64,32 @@ func FetchSpecificLocation(url string, cache pokecache.Cache) (SpecificLocationA
 	}
 	return location, nil
 }
+
+func FetchPokemonInfo(url string, cache pokecache.Cache) (Pokemon, error) {
+	if data, ok := cache.Get(url); ok {
+		var pokemon Pokemon
+		json.Unmarshal(data, &pokemon)
+		return pokemon, nil
+	}
+	res, err := http.Get(url)
+	if err != nil {
+		return Pokemon{}, err
+	}
+	status := res.StatusCode
+	if status != http.StatusOK {
+		return Pokemon{}, fmt.Errorf("Unexpected status %d", status)
+	}
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return Pokemon{}, err
+	}
+
+	cache.Add(url, body)
+
+	var pokemon Pokemon
+	if err := json.Unmarshal(body, &pokemon); err != nil {
+		return Pokemon{}, err
+	}
+	return pokemon, nil
+}

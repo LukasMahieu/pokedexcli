@@ -3,9 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/LukasMahieu/pokedexcli/internal/pokecache"
 	"os"
 	"time"
+
+	"github.com/LukasMahieu/pokedexcli/internal/pokecache"
+	"github.com/LukasMahieu/pokedexcli/internal/pokedex"
 )
 
 type cliCommand struct {
@@ -41,6 +43,21 @@ func getCommands() map[string]cliCommand {
 			description: "Explore a given location",
 			callback:    commandExplore,
 		},
+		"catch": {
+			name:        "catch",
+			description: "Catch a pokemon",
+			callback:    commandCatch,
+		},
+		"inspect": {
+			name:        "inspect",
+			description: "Inspect a pokemon",
+			callback:    commandInspect,
+		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "Pokedex a pokemon",
+			callback:    commandPokedex,
+		},
 	}
 	return commands
 }
@@ -62,6 +79,7 @@ func main() {
 		Previous: "",
 		Next:     "https://pokeapi.co/api/v2/location-area/",
 		Cache:    cache,
+		Pokedex:  pokedex.NewPokedex(),
 	}
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Println("Welcome to the Pokedex!")
